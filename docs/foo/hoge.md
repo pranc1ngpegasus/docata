@@ -1,0 +1,5 @@
+---
+id: hoge
+deps:
+  - bar
+---

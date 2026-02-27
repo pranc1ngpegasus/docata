@@ -1,0 +1,26 @@
+{
+  "nodes": [
+    {
+      "id": "bar",
+      "path": "./docs/bar.md"
+    },
+    {
+      "id": "foo",
+      "path": "./docs/foo.md"
+    },
+    {
+      "id": "hoge",
+      "path": "./docs/foo/hoge.md"
+    }
+  ],
+  "edges": [
+    {
+      "from": "bar",
+      "to": "foo"
+    },
+    {
+      "from": "hoge",
+      "to": "bar"
+    }
+  ]
+}
