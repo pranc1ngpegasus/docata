@@ -34,7 +34,9 @@
           inherit (pre-commit-check) shellHook;
           buildInputs =
             (with pkgs; [
+              ni
               nixfmt
+              pnpm
             ])
             ++ pre-commit-check.enabledPackages;
         };
