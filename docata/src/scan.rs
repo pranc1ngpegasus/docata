@@ -46,6 +46,13 @@ pub enum ScanError {
     FrontmatterTooLarge { path: PathBuf },
 }
 
+/// Scans markdown files under `root` and parses frontmatter declarations.
+///
+/// # Errors
+///
+/// Returns an error when directory traversal fails, file I/O fails,
+/// frontmatter cannot be read/parsed, or frontmatter exceeds the configured size
+/// limit.
 pub fn scan(root: &Path) -> Result<Vec<Entry>, Error> {
     let paths: Vec<PathBuf> = WalkDir::new(root)
         .into_iter()

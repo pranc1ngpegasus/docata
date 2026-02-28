@@ -29,7 +29,7 @@ pub enum CatalogError {
 }
 
 impl Catalog {
-    #[must_use] 
+    #[must_use]
     pub fn from_entries(entries: &[Entry]) -> Self {
         let nodes = entries
             .iter()
@@ -52,6 +52,11 @@ impl Catalog {
         Catalog { nodes, edges }
     }
 
+    /// Writes the catalog to `path` as pretty-printed JSON.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error when file creation/writing fails or JSON serialization fails.
     pub fn write(
         &self,
         path: &std::path::Path,

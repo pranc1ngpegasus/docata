@@ -1,7 +1,6 @@
 [package]
 edition.workspace = true
 name = "docata"
-public.workspace = true
 version.workspace = true
 
 [dependencies]
