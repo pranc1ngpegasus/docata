@@ -21,3 +21,8 @@ unsafe_code = "deny"
 [workspace.package]
 edition = "2024"
 version = "0.0.0"
+
+# The profile that 'dist' will build with
+[profile.dist]
+inherits = "release"
+lto = "thin"
