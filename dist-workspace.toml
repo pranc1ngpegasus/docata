@@ -10,7 +10,9 @@ ci = "github"
 # The installers to generate for each app
 installers = ["npm"]
 # Package managers to publish installers to
-publish-jobs = ["npm"]
+publish-jobs = ["./publish-npm"]
+# Permissions for the custom publish job (OIDC + artifact download)
+github-custom-job-permissions = { "publish-npm" = { id-token = "write", actions = "read", contents = "read" } }
 # Target platforms to build apps for (Rust target-triple syntax)
 targets = ["aarch64-apple-darwin", "aarch64-unknown-linux-gnu", "x86_64-unknown-linux-gnu", "x86_64-pc-windows-msvc"]
 github-custom-runners = { "global" = "ubuntu-latest" }
