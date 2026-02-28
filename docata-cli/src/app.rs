@@ -1,13 +1,24 @@
-use crate::build;
-use crate::catalog::Catalog;
-use crate::catalog_presentation;
-use crate::error::Error;
-use crate::format::OutputFormat;
-use crate::graph::Graph;
-use crate::relation;
-use clap::{Parser, Subcommand};
+use clap::{Parser, Subcommand, ValueEnum};
+use docata::{Error, OutputFormat, RelationKind};
 use std::io;
 use std::path::Path;
+
+#[derive(Clone, Copy, Debug, ValueEnum)]
+enum CliOutputFormat {
+    #[value(name = "text")]
+    Text,
+    #[value(name = "json")]
+    Json,
+}
+
+impl From<CliOutputFormat> for OutputFormat {
+    fn from(value: CliOutputFormat) -> Self {
+        match value {
+            CliOutputFormat::Text => Self::Text,
+            CliOutputFormat::Json => Self::Json,
+        }
+    }
+}
 
 #[derive(Parser)]
 #[command(author, version, about)]
@@ -28,24 +39,16 @@ enum Commands {
         id: String,
         #[arg(default_value = "./docs/catalog.json")]
         catalog: String,
-        #[arg(value_enum, long, default_value_t = OutputFormat::Json)]
-        format: OutputFormat,
+        #[arg(value_enum, long, default_value_t = CliOutputFormat::Json)]
+        format: CliOutputFormat,
     },
     Refs {
         id: String,
         #[arg(default_value = "./docs/catalog.json")]
         catalog: String,
-        #[arg(value_enum, long, default_value_t = OutputFormat::Text)]
-        format: OutputFormat,
+        #[arg(value_enum, long, default_value_t = CliOutputFormat::Text)]
+        format: CliOutputFormat,
     },
-}
-
-fn load_index(catalog_path: &Path) -> Result<(Catalog, Graph), Error> {
-    let mut file = std::fs::File::open(catalog_path)?;
-    let catalog = catalog_presentation::read_catalog(&mut file)?;
-    let graph = Graph::from_catalog(&catalog);
-
-    Ok((catalog, graph))
 }
 
 /// Run the CLI.
@@ -61,25 +64,20 @@ pub fn run() -> Result<(), Error> {
         Commands::Build { dir, out_dir } => {
             let dir = Path::new(&dir);
             let out_dir = Path::new(&out_dir);
-
             let mut file = std::fs::File::create(out_dir)?;
-            build::run(dir, &mut file)
+            docata::build_catalog(dir, &mut file)
         },
         Commands::Deps {
             id,
             catalog,
             format,
         } => {
-            let catalog = Path::new(&catalog);
-            let (catalog, graph) = load_index(catalog)?;
-
             let mut stdout = io::stdout().lock();
-            relation::run(
+            docata::query_catalog_relation(
                 &id,
-                &catalog,
-                &graph,
-                relation::RelationKind::Deps,
-                format,
+                Path::new(&catalog),
+                RelationKind::Deps,
+                format.into(),
                 &mut stdout,
             )
         },
@@ -88,16 +86,12 @@ pub fn run() -> Result<(), Error> {
             catalog,
             format,
         } => {
-            let catalog = Path::new(&catalog);
-            let (catalog, graph) = load_index(catalog)?;
-
             let mut stdout = io::stdout().lock();
-            relation::run(
+            docata::query_catalog_relation(
                 &id,
-                &catalog,
-                &graph,
-                relation::RelationKind::Refs,
-                format,
+                Path::new(&catalog),
+                RelationKind::Refs,
+                format.into(),
                 &mut stdout,
             )
         },

@@ -1,5 +1,7 @@
+mod app;
+
 fn main() {
-    if let Err(err) = docata::run() {
+    if let Err(err) = app::run() {
         eprintln!("error: {err}");
         std::process::exit(1);
     }
