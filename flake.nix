@@ -39,6 +39,7 @@
           inherit (pre-commit-check) shellHook;
           buildInputs =
             (with pkgs; [
+              cargo-dist
               ni
               nixfmt
               pnpm
