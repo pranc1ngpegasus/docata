@@ -17,7 +17,13 @@ The workspace contains two crates:
 - Extracts frontmatter fields:
   - `id`: unique document identifier (required)
   - `deps`: dependency IDs (optional)
+  - `type` / `domain` / `status` / `source_of_truth` (optional, for node metadata output)
 - Generates a JSON catalog representing nodes and edges
+- Deterministic output for `nodes`/`edges` ordering and normalized `path` strings
+- Validation checks:
+  - duplicate IDs
+  - unresolved dependencies
+  - dependency cycles
 - Queries the catalog:
   - `deps`: direct dependencies for a given ID
   - `refs`: documents that reference a given ID
@@ -32,6 +38,10 @@ id: foo
 deps:
   - bar
   - baz
+type: spec
+domain: billing
+status: draft
+source_of_truth: handbook
 ---
 
 Body...
@@ -39,6 +49,7 @@ Body...
 
 - `id` is required
 - `deps` is optional
+- `type` / `domain` / `status` / `source_of_truth` are optional
 - Files without valid frontmatter including `id` are skipped
 
 ## Installation
@@ -60,6 +71,22 @@ docata build
 
 # Specify paths explicitly
 docata build ./docs ./docs/catalog.json
+
+# Include node metadata (`type`, `domain`, `status`, `source_of_truth`) in output
+docata build ./docs ./docs/catalog.json --with-node-metadata
+```
+
+### Check catalog in CI
+
+```bash
+# Structural checks (duplicate IDs, unresolved dependencies, cycles)
+docata check ./docs
+
+# Structural checks + ensure no regeneration diff against existing catalog
+docata check ./docs --catalog ./docs/catalog.json
+
+# Use the same metadata mode as build when catalog includes node metadata
+docata check ./docs --catalog ./docs/catalog.json --with-node-metadata
 ```
 
 ### Query dependencies
@@ -70,6 +97,9 @@ docata deps foo
 
 # JSON output with metadata
 docata deps foo --format json
+
+# Fail with non-zero exit if `foo` does not exist in nodes
+docata deps foo --strict
 ```
 
 ### Query reverse references
@@ -80,6 +110,9 @@ docata refs foo
 
 # JSON output
 docata refs foo --format json
+
+# Fail with non-zero exit if `foo` does not exist in nodes
+docata refs foo --strict
 ```
 
 ### Example output
