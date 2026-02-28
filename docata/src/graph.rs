@@ -26,7 +26,7 @@ impl Graph {
         Self { forward, reverse }
     }
 
-    #[must_use] 
+    #[must_use]
     pub fn deps(
         &self,
         id: &str,
@@ -34,7 +34,7 @@ impl Graph {
         self.forward.get(id).cloned().unwrap_or_default()
     }
 
-    #[must_use] 
+    #[must_use]
     pub fn refs(
         &self,
         id: &str,

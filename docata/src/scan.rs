@@ -1,4 +1,3 @@
-use crate::error::Error;
 use rayon::prelude::*;
 use serde::Deserialize;
 use std::{
@@ -46,7 +45,13 @@ pub enum ScanError {
     FrontmatterTooLarge { path: PathBuf },
 }
 
-pub fn scan(root: &Path) -> Result<Vec<Entry>, Error> {
+/// Scan markdown documents under `root` and extract frontmatter entries.
+///
+/// # Errors
+///
+/// Returns `ScanError` when walking the directory, opening files, reading
+/// lines, or parsing frontmatter fails.
+pub fn scan(root: &Path) -> Result<Vec<Entry>, ScanError> {
     let paths: Vec<PathBuf> = WalkDir::new(root)
         .into_iter()
         .map(|entry| {
