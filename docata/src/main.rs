@@ -1,9 +1,49 @@
-use clap::{Parser, Subcommand};
+use clap::{Parser, Subcommand, ValueEnum};
 use docata::catalog::Catalog;
 use docata::error::Error;
 use docata::graph::Graph;
 use docata::scan::scan;
+use serde::Serialize;
+use std::collections::HashMap;
+use std::io;
+use std::io::Write;
 use std::path::Path;
+
+#[derive(Clone, Debug, ValueEnum)]
+enum OutputFormat {
+    #[value(name = "text")]
+    Text,
+    #[value(name = "json")]
+    Json,
+}
+
+#[derive(Debug, Serialize)]
+struct RelationItem {
+    id: String,
+    path: Option<String>,
+    resolved: bool,
+}
+
+#[derive(Debug, Serialize)]
+struct RelationMeta {
+    missing_nodes: Vec<String>,
+}
+
+#[derive(Debug, Serialize)]
+struct RelationResponse {
+    command: String,
+    query_id: String,
+    source_dir: String,
+    count: usize,
+    items: Vec<RelationItem>,
+    meta: RelationMeta,
+}
+
+#[derive(Debug)]
+enum RelationMode {
+    Deps,
+    Refs,
+}
 
 #[derive(Parser)]
 #[command(author, version, about)]
@@ -24,11 +64,15 @@ enum Commands {
         id: String,
         #[arg(default_value = "./docs")]
         dir: String,
+        #[arg(value_enum, long, default_value_t = OutputFormat::Json)]
+        format: OutputFormat,
     },
     Refs {
         id: String,
         #[arg(default_value = "./docs")]
         dir: String,
+        #[arg(value_enum, long, default_value_t = OutputFormat::Text)]
+        format: OutputFormat,
     },
 }
 
@@ -52,29 +96,83 @@ fn run() -> Result<(), Error> {
 
             Ok(())
         },
-        Commands::Deps { id, dir } => {
-            let dir = Path::new(&dir);
+        Commands::Deps { id, dir, format } => {
+            run_relation_command(&id, Path::new(&dir), RelationMode::Deps, format)
+        },
+        Commands::Refs { id, dir, format } => {
+            run_relation_command(&id, Path::new(&dir), RelationMode::Refs, format)
+        },
+    }
+}
 
-            let entries = scan(dir)?;
-            let catalog = Catalog::from_entries(&entries);
-            let graph = Graph::from_catalog(&catalog);
+fn run_relation_command(
+    id: &str,
+    dir: &Path,
+    mode: RelationMode,
+    format: OutputFormat,
+) -> Result<(), Error> {
+    let entries = scan(dir)?;
+    let catalog = Catalog::from_entries(&entries);
+    let graph = Graph::from_catalog(&catalog);
 
-            for dep in graph.deps(&id) {
-                println!("{dep}");
+    let mut ids = match mode {
+        RelationMode::Deps => graph.deps(id),
+        RelationMode::Refs => graph.refs(id),
+    };
+    ids.sort();
+    ids.dedup();
+
+    match format {
+        OutputFormat::Text => {
+            for id in ids {
+                println!("{id}");
             }
-
             Ok(())
         },
-        Commands::Refs { id, dir } => {
-            let dir = Path::new(&dir);
+        OutputFormat::Json => {
+            let node_paths = catalog
+                .nodes
+                .iter()
+                .map(|node| (node.id.as_str(), node.path.as_str()))
+                .collect::<HashMap<_, _>>();
 
-            let entries = scan(dir)?;
-            let catalog = Catalog::from_entries(&entries);
-            let graph = Graph::from_catalog(&catalog);
+            let mut missing_nodes = Vec::new();
+            let mut items = Vec::with_capacity(ids.len());
 
-            for r#ref in graph.refs(&id) {
-                println!("{ref}");
+            for id in ids {
+                if let Some(path) = node_paths.get(id.as_str()) {
+                    items.push(RelationItem {
+                        id,
+                        path: Some((*path).to_owned()),
+                        resolved: true,
+                    });
+                } else {
+                    missing_nodes.push(id.clone());
+                    items.push(RelationItem {
+                        id,
+                        path: None,
+                        resolved: false,
+                    });
+                }
             }
+
+            missing_nodes.sort();
+
+            let response = RelationResponse {
+                command: match mode {
+                    RelationMode::Deps => String::from("deps"),
+                    RelationMode::Refs => String::from("refs"),
+                },
+                query_id: id.to_owned(),
+                source_dir: dir.to_string_lossy().to_string(),
+                count: items.len(),
+                items,
+                meta: RelationMeta { missing_nodes },
+            };
+
+            let mut stdout = io::stdout().lock();
+            serde_json::to_writer_pretty(&mut stdout, &response)?;
+            writeln!(&mut stdout)?;
 
             Ok(())
         },
