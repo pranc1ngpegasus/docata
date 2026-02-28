@@ -2,15 +2,13 @@
 edition.workspace = true
 name = "docata"
 version.workspace = true
-description = "CLI for building and querying a markdown document dependency catalog"
+description = "Core library for building and querying a markdown document dependency catalog"
 repository = "https://github.com/pranc1ngpegasus/docata"
 homepage = "https://github.com/pranc1ngpegasus/docata"
 documentation = "https://docs.rs/docata"
 license = "MIT"
 
 [dependencies]
-clap.features = ["derive"]
-clap.workspace = true
 rayon.workspace = true
 serde.features = ["derive"]
 serde.workspace = true

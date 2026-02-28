@@ -1,0 +1,21 @@
+[package]
+edition.workspace = true
+name = "docata-cli"
+version.workspace = true
+description = "CLI for building and querying docata catalogs"
+repository = "https://github.com/pranc1ngpegasus/docata"
+homepage = "https://github.com/pranc1ngpegasus/docata"
+documentation = "https://docs.rs/docata-cli"
+license = "MIT"
+
+[[bin]]
+name = "docata"
+path = "src/main.rs"
+
+[dependencies]
+clap.features = ["derive"]
+clap.workspace = true
+docata.path = "../docata"
+
+[lints]
+workspace = true
