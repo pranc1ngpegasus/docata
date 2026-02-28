@@ -20,7 +20,7 @@ unsafe_code = "deny"
 
 [workspace.package]
 edition = "2024"
-version = "0.0.2"
+version = "0.0.4"
 
 # The profile that 'dist' will build with
 [profile.dist]
