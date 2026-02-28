@@ -1,35 +1,26 @@
 use crate::scan::Entry;
-use serde::Serialize;
-use thiserror::Error;
+use serde::Deserialize;
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Deserialize)]
 pub struct Catalog {
     pub nodes: Vec<Node>,
     pub edges: Vec<Edge>,
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Deserialize)]
 pub struct Node {
     pub id: String,
     pub path: String,
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Deserialize)]
 pub struct Edge {
     pub from: String,
     pub to: String,
 }
 
-#[derive(Debug, Error)]
-pub enum CatalogError {
-    #[error("file error: {0}")]
-    File(#[from] std::io::Error),
-    #[error("json error: {0}")]
-    Json(#[from] serde_json::Error),
-}
-
 impl Catalog {
-    #[must_use] 
+    #[must_use]
     pub fn from_entries(entries: &[Entry]) -> Self {
         let nodes = entries
             .iter()
@@ -50,16 +41,5 @@ impl Catalog {
         }
 
         Catalog { nodes, edges }
-    }
-
-    pub fn write(
-        &self,
-        path: &std::path::Path,
-    ) -> Result<(), CatalogError> {
-        let file = std::fs::File::create(path)?;
-
-        serde_json::to_writer_pretty(file, self)?;
-
-        Ok(())
     }
 }

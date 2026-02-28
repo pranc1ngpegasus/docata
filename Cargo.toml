@@ -20,5 +20,4 @@ unsafe_code = "deny"
 
 [workspace.package]
 edition = "2024"
-public = true
 version = "0.0.0"
