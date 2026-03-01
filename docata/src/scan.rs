@@ -13,6 +13,10 @@ pub struct Entry {
     pub id: String,
     pub deps: Vec<String>,
     pub path: PathBuf,
+    pub node_type: Option<String>,
+    pub domain: Option<String>,
+    pub status: Option<String>,
+    pub source_of_truth: Option<String>,
 }
 
 #[derive(Debug, Error)]
@@ -88,6 +92,14 @@ struct Frontmatter {
     id: String,
     #[serde(default)]
     deps: Vec<String>,
+    #[serde(default, rename = "type")]
+    node_type: Option<String>,
+    #[serde(default)]
+    domain: Option<String>,
+    #[serde(default)]
+    status: Option<String>,
+    #[serde(default)]
+    source_of_truth: Option<String>,
 }
 
 fn parse_frontmatter(path: &Path) -> Result<Option<Entry>, ScanError> {
@@ -146,5 +158,9 @@ fn parse_frontmatter(path: &Path) -> Result<Option<Entry>, ScanError> {
         id: fm.id,
         deps: fm.deps,
         path: path.to_path_buf(),
+        node_type: fm.node_type,
+        domain: fm.domain,
+        status: fm.status,
+        source_of_truth: fm.source_of_truth,
     }))
 }

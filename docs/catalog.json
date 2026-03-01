@@ -2,15 +2,15 @@
   "nodes": [
     {
       "id": "bar",
-      "path": "./docs/bar.md"
+      "path": "docs/bar.md"
     },
     {
       "id": "foo",
-      "path": "./docs/foo.md"
+      "path": "docs/foo.md"
     },
     {
       "id": "hoge",
-      "path": "./docs/foo/hoge.md"
+      "path": "docs/foo/hoge.md"
     }
   ],
   "edges": [
