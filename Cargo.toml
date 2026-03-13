@@ -9,7 +9,7 @@ serde = "1.0.228"
 serde_json = "1.0.149"
 thiserror = "2.0.18"
 walkdir = "2.5.0"
-yaml_serde = "0.10.3"
+yaml_serde = "0.10.4"
 
 [workspace.lints.clippy]
 all = "warn"
