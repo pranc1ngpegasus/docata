@@ -19,7 +19,7 @@ jobs:
       PLAN: ${{ inputs.plan }}
     steps:
       - name: Fetch npm packages
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@v8
         with:
           pattern: artifacts-*
           path: npm/
